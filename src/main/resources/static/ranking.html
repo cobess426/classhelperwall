@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2422班学习互助解答墙 - 排行榜</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background-color: #87CEEB;
+            padding: 0 20px;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-title {
+            font-family: "楷体", KaiTi, serif;
+            font-size: 24px;
+            color: white;
+            text-align: center;
+            flex-grow: 1;
+            line-height: 60px;
+        }
+
+        .back-button {
+            background-color: white;
+            color: #87CEEB;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .ranking-title {
+            text-align: center;
+            margin: 20px 0 30px;
+            font-size: 28px;
+            color: #333;
+        }
+
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ranking-table thead {
+            background-color: #f8f9fa;
+        }
+
+        .ranking-table th {
+            padding: 16px 12px;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+            font-size: 16px;
+        }
+
+        .ranking-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+            text-align: center;
+        }
+
+        .ranking-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .rank-cell {
+            font-weight: bold;
+            color: #0066cc;
+        }
+
+        .score-cell {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            color: #0066cc;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background-color: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        .page-btn:disabled {
+            color: #adb5bd;
+            cursor: not-allowed;
+            background-color: #f8f9fa;
+        }
+
+        .page-info {
+            color: #666;
+            font-size: 14px;
+            margin: 0 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 20px;
+            color: #dc3545;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .ranking-title {
+                font-size: 24px;
+                margin: 15px 0 20px;
+            }
+            
+            .ranking-table th,
+            .ranking-table td {
+                padding: 10px 8px;
+                font-size: 14px;
+            }
+            
+            .navbar-title {
+                font-size: 20px;
+            }
+            
+            .pagination {
+                gap: 5px;
+            }
+            
+            .page-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+                min-width: 35px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-title">2422学习互助解答墙</div>
+        <button class="back-button" id="backBtn">返回首页</button>
+    </header>
+
+    <main class="main-content">
+        <h1 class="ranking-title">互助解答排行榜</h1>
+        
+        <div id="loading" class="loading">正在加载排行榜数据...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div class="table-container" id="tableContainer" style="display: none;">
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th width="10%">排名</th>
+                        <th width="20%">学号</th>
+                        <th width="20%">姓名</th>
+                        <th width="15%">积分</th>
+                        <th width="15%">提问数</th>
+                        <th width="20%">回答数</th>
+                    </tr>
+                </thead>
+                <tbody id="rankingTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" id="pagination" style="display: none;">
+            <button class="page-btn" id="firstPage">首页</button>
+            <button class="page-btn" id="prevPage">上一页</button>
+            <span class="page-info" id="pageInfo"></span>
+            <button class="page-btn" id="nextPage">下一页</button>
+            <button class="page-btn" id="lastPage">末页</button>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        let currentPage = 1;
+        const pageSize = 10;
+        let totalPages = 1;
+        let totalItems = 0;
+
+        // DOM元素
+        const backBtn = document.getElementById('backBtn');
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        const tableContainer = document.getElementById('tableContainer');
+        const pagination = document.getElementById('pagination');
+        const tableBody = document.getElementById('rankingTableBody');
+
+        // 返回按钮事件
+        backBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        // 加载排行榜数据
+        async function loadRankingData(page) {
+            try {
+                showLoading();
+                
+                const response = await fetch(`${API_BASE}/scores/ranking/page?page=${page}&size=${pageSize}`);
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    const data = result.data;
+                    const scores = data.list;
+                    totalItems = data.total;
+                    totalPages = Math.ceil(totalItems / pageSize);
+                    
+                    renderTable(scores, page);
+                    updatePagination(page);
+                    showTable();
+                } else {
+                    showError('获取排行榜数据失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('加载排行榜数据时出错:', error);
+                showError('加载排行榜数据时出错，请检查网络连接');
+            }
+        }
+
+        // 渲染表格
+        function renderTable(scores, currentPage) {
+            tableBody.innerHTML = '';
+            
+            if (scores.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="6" style="text-align: center; padding: 40px; color: #999;">暂无数据</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            const startRank = (currentPage - 1) * pageSize + 1;
+            
+            scores.forEach((score, index) => {
+                const row = document.createElement('tr');
+                const rank = startRank + index;
+                
+                row.innerHTML = `
+                    <td class="rank-cell">${rank}</td>
+                    <td>${score.studentId}</td>
+                    <td>${score.studentName}</td>
+                    <td class="score-cell">${score.points}</td>
+                    <td>${score.questionCount}</td>
+                    <td>${score.answerCount}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // 更新分页控件
+        function updatePagination(page) {
+            document.getElementById('pageInfo').textContent = `第 ${page} 页，共 ${totalPages} 页`;
+            
+            document.getElementById('firstPage').disabled = page === 1;
+            document.getElementById('prevPage').disabled = page === 1;
+            document.getElementById('nextPage').disabled = page === totalPages;
+            document.getElementById('lastPage').disabled = page === totalPages;
+        }
+
+        // 分页按钮事件
+        document.getElementById('firstPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage = 1;
+                loadRankingData(currentPage);
+            }
+        });
+
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadRankingData(currentPage);
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadRankingData(currentPage);
+            }
+        });
+
+        document.getElementById('lastPage').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage = totalPages;
+                loadRankingData(currentPage);
+            }
+        });
+
+        // 显示/隐藏方法
+        function showLoading() {
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            tableContainer.style.display = 'none';
+            pagination.style.display = 'none';
+        }
+
+        function showError(message) {
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'block';
+            errorEl.textContent = message;
+            tableContainer.style.display = 'none';
+            pagination.style.display = 'none';
+        }
+
+        function showTable() {
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'none';
+            tableContainer.style.display = 'block';
+            pagination.style.display = 'flex';
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRankingData(currentPage);
+        });
+    </script>
+</body>
+</html>

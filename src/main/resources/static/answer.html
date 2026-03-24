@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2422班学习互助解答墙 - 解答区</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #87CEEB;
+            padding: 0 20px;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-title {
+            font-family: "楷体", KaiTi, serif;
+            font-size: 24px;
+            color: white;
+            text-align: center;
+            flex-grow: 1;
+            line-height: 60px;
+        }
+
+        .back-button {
+            background-color: white;
+            color: #87CEEB;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            color: #333;
+        }
+
+        .questions-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .questions-list {
+            width: 100%;
+        }
+
+        .question-item {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .question-item:last-child {
+            border-bottom: none;
+        }
+
+        .question-info {
+            flex: 1;
+        }
+
+        .question-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .question-id {
+            font-weight: bold;
+            color: #333;
+            margin-right: 10px;
+        }
+
+        .question-status {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .status-answered {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .question-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .question-image-container {
+            margin-top: 10px;
+        }
+
+        .question-image {
+            max-width: 200px;
+            max-height: 120px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .answer-btn {
+            background-color: #87CEEB;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-left: 20px;
+        }
+
+        .answer-btn:hover {
+            background-color: #0066cc;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        /* 解答表单模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            color: #333;
+            margin: 0;
+        }
+
+        .modal-close {
+            color: #999;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: #87CEEB;
+            outline: none;
+            box-shadow: 0 0 5px rgba(135, 206, 235, 0.3);
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        .form-textarea:focus {
+            border-color: #87CEEB;
+            outline: none;
+            box-shadow: 0 0 5px rgba(135, 206, 235, 0.3);
+        }
+
+        .submit-btn {
+            background-color: #87CEEB;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background-color: #0066cc;
+        }
+
+        .submit-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .current-question {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #87CEEB;
+        }
+
+        .current-question-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .current-question-meta {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 5px;
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+            
+            .questions-container {
+                padding: 20px;
+            }
+            
+            .question-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .answer-btn {
+                margin-left: 0;
+                margin-top: 15px;
+                width: 100%;
+            }
+            
+            .modal-content {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-title">2422学习互助解答墙</div>
+        <button class="back-button" id="backBtn">返回首页</button>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">解答区</h1>
+        
+        <div class="questions-container">
+            <div id="loading" class="loading">正在加载问题列表...</div>
+            <div id="questionsList" style="display: none;">
+                <!-- 问题列表将在这里动态生成 -->
+            </div>
+            <div id="emptyState" class="empty-state" style="display: none;">暂无待解答的问题</div>
+        </div>
+    </main>
+
+    <!-- 解答表单模态框 -->
+    <div class="modal" id="answerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">提交解答</h3>
+                <span class="modal-close" id="modalClose">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="current-question" id="currentQuestion">
+                    <div class="current-question-title">正在解答问题 #<span id="questionIdDisplay">0</span></div>
+                    <div class="current-question-meta" id="questionMeta"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="answerStudentId" class="form-label">学号</label>
+                    <input type="text" id="answerStudentId" class="form-input" placeholder="请输入学号" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="answerStudentName" class="form-label">姓名</label>
+                    <input type="text" id="answerStudentName" class="form-input" placeholder="请输入姓名" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="answerContent" class="form-label">解答内容</label>
+                    <textarea id="answerContent" class="form-textarea" placeholder="请输入详细的解答内容..." required></textarea>
+                </div>
+                
+                <div class="message" id="modalMessage"></div>
+                
+                <button class="submit-btn" id="submitAnswerBtn">提交解答</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片查看模态框 -->
+    <div class="image-modal" id="imageModal">
+        <span class="image-modal-close" id="imageModalClose">&times;</span>
+        <img class="image-modal-content" id="modalImage">
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        
+        // 获取DOM元素
+        const backBtn = document.getElementById('backBtn');
+        const questionsList = document.getElementById('questionsList');
+        const loadingEl = document.getElementById('loading');
+        const emptyState = document.getElementById('emptyState');
+        const answerModal = document.getElementById('answerModal');
+        const modalClose = document.getElementById('modalClose');
+        const currentQuestionEl = document.getElementById('currentQuestion');
+        const questionIdDisplay = document.getElementById('questionIdDisplay');
+        const questionMeta = document.getElementById('questionMeta');
+        const answerStudentIdInput = document.getElementById('answerStudentId');
+        const answerStudentNameInput = document.getElementById('answerStudentName');
+        const answerContentInput = document.getElementById('answerContent');
+        const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+        const modalMessage = document.getElementById('modalMessage');
+        const imageModal = document.getElementById('imageModal');
+        const imageModalClose = document.getElementById('imageModalClose');
+        const modalImage = document.getElementById('modalImage');
+        
+        let currentQuestionId = 0;
+        let allQuestions = [];
+        
+        // 返回首页按钮事件
+        backBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+        
+        // 模态框关闭按钮事件
+        modalClose.addEventListener('click', () => {
+            answerModal.style.display = 'none';
+        });
+        
+        // 图片模态框关闭按钮事件
+        imageModalClose.addEventListener('click', () => {
+            imageModal.style.display = 'none';
+        });
+        
+        // 点击模态框外部关闭
+        answerModal.addEventListener('click', (e) => {
+            if (e.target === answerModal) {
+                answerModal.style.display = 'none';
+            }
+        });
+        
+        imageModal.addEventListener('click', (e) => {
+            if (e.target === imageModal) {
+                imageModal.style.display = 'none';
+            }
+        });
+        
+        // 提交解答按钮事件
+        submitAnswerBtn.addEventListener('click', submitAnswer);
+        
+        // 页面加载时获取问题列表
+        window.addEventListener('DOMContentLoaded', loadQuestions);
+        
+        // 加载问题列表
+        async function loadQuestions() {
+            try {
+                const response = await fetch(`${API_BASE}/questions`);
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    allQuestions = result.data || [];
+                    renderQuestionsList(allQuestions);
+                } else {
+                    showEmptyState('加载问题列表失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('加载问题列表失败:', error);
+                showEmptyState('加载问题列表失败，请检查网络连接');
+            }
+        }
+        
+        // 渲染问题列表
+        function renderQuestionsList(questions) {
+            loadingEl.style.display = 'none';
+            
+            if (questions.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            questionsList.style.display = 'block';
+            questionsList.innerHTML = '';
+            
+            // 筛选出待解答的问题
+            const pendingQuestions = questions.filter(q => q.status === 'PENDING');
+            
+            if (pendingQuestions.length === 0) {
+                showEmptyState('暂无待解答的问题');
+                return;
+            }
+            
+            pendingQuestions.forEach((question, index) => {
+                const questionItem = document.createElement('div');
+                questionItem.className = 'question-item';
+                
+                const statusClass = question.status === 'ANSWERED' ? 'status-answered' : 'status-pending';
+                const statusText = question.status === 'ANSWERED' ? '已解答' : '待解答';
+                
+                let imageHtml = '';
+                if (question.imageUrl) {
+                    imageHtml = `
+                        <div class="question-image-container">
+                            <img src="${question.imageUrl}" alt="问题图片" class="question-image" onclick="showImageModal('${question.imageUrl}')">
+                        </div>
+                    `;
+                }
+                
+                questionItem.innerHTML = `
+                    <div class="question-info">
+                        <div class="question-header">
+                            <div class="question-id">问题 #${question.id}</div>
+                            <div class="question-status ${statusClass}">${statusText}</div>
+                        </div>
+                        <div class="question-meta">
+                            提问者：${question.studentName} (${question.studentId})<br>
+                            提问时间：${new Date(question.createdAt).toLocaleString('zh-CN')}
+                        </div>
+                        ${imageHtml}
+                    </div>
+                    <button class="answer-btn" onclick="openAnswerModal(${question.id})">解答</button>
+                `;
+                
+                questionsList.appendChild(questionItem);
+            });
+        }
+        
+        // 打开解答模态框
+        window.openAnswerModal = function(questionId) {
+            const question = allQuestions.find(q => q.id === questionId);
+            if (!question) return;
+            
+            currentQuestionId = questionId;
+            questionIdDisplay.textContent = questionId;
+            questionMeta.innerHTML = `
+                提问者：${question.studentName} (${question.studentId})<br>
+                提问时间：${new Date(question.createdAt).toLocaleString('zh-CN')}
+            `;
+            
+            // 清空表单
+            answerStudentIdInput.value = '';
+            answerStudentNameInput.value = '';
+            answerContentInput.value = '';
+            modalMessage.style.display = 'none';
+            
+            // 显示模态框
+            answerModal.style.display = 'flex';
+        };
+        
+        // 显示图片模态框
+        window.showImageModal = function(imageUrl) {
+            modalImage.src = imageUrl;
+            imageModal.style.display = 'flex';
+        };
+        
+        // 提交解答
+        async function submitAnswer() {
+            const studentId = answerStudentIdInput.value.trim();
+            const studentName = answerStudentNameInput.value.trim();
+            const content = answerContentInput.value.trim();
+            
+            if (!studentId || !studentName) {
+                showModalMessage('请填写学号和姓名！', 'error');
+                return;
+            }
+            
+            if (!content) {
+                showModalMessage('请填写解答内容！', 'error');
+                return;
+            }
+            
+            try {
+                submitAnswerBtn.disabled = true;
+                submitAnswerBtn.textContent = '提交中...';
+                
+                const formData = new FormData();
+                formData.append('questionId', currentQuestionId);
+                formData.append('studentId', studentId);
+                formData.append('studentName', studentName);
+                formData.append('content', content);
+                
+                const response = await fetch(`${API_BASE}/answers`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    showModalMessage('解答提交成功！', 'success');
+                    
+                    // 3秒后关闭模态框并刷新问题列表
+                    setTimeout(() => {
+                        answerModal.style.display = 'none';
+                        loadQuestions();
+                    }, 2000);
+                } else {
+                    showModalMessage('提交失败：' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('提交失败:', error);
+                showModalMessage('提交失败，请检查网络连接', 'error');
+            } finally {
+                submitAnswerBtn.disabled = false;
+                submitAnswerBtn.textContent = '提交解答';
+            }
+        }
+        
+        // 显示模态框消息
+        function showModalMessage(text, type) {
+            modalMessage.textContent = text;
+            modalMessage.className = 'message ' + type;
+            modalMessage.style.display = 'block';
+        }
+        
+        // 显示空状态
+        function showEmptyState(message) {
+            loadingEl.style.display = 'none';
+            questionsList.style.display = 'none';
+            emptyState.textContent = message;
+            emptyState.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
